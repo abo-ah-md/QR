@@ -1,9 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>QR Code Generator</title>
+  <title>منشيء كود QR</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+  <script type="module">
+  import { removeBackground } from "https://esm.sh/@imgly/background-removal";
+</script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web"></script>
+  
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +20,21 @@
       height: 100vh;
       background: #f4f4f4;
     }
+    #primary{
+      display: none;
+      width: 100px;
+      height: 100px;
+    }
+    
+    .child {
+      display: none;
+      width: 60px;
+  height: 60px;
+      border-radius: 60%;
+  padding: 10px;
+  margin: 20px;
+  
+}
     #qrcode {
       margin-top: 20px;
       padding: 10px;
@@ -29,22 +50,80 @@
       border: 1px solid #ccc;
     }
     button {
-      background: #007bff;
+      background: #593ec1;
       color: white;
       cursor: pointer;
     }
     button:hover {
-      background: #0056b3;
+      background: #281c59;
     }
   </style>
 </head>
 <body>
-  <h2>QR Code Generator</h2>
+  <h2>Image remover</h2>
+  <input type="file" id="upload-image-removed" accept="image/*">
+  <img id="preview-rmoved-image" style="max-width:300px; display:none; border:1px solid #ccc;">
+  <h2>image colors extracter</h2>
+  <input type="file" id="upload-image-colors" accept="image/*">
+  <br><br>
+  <img id="preview" style="max-width:300px; display:none; border:1px solid #ccc;">
+  <div class="parent">
+  <div class="child"id="primary"></div>
+  <div class="child" class="secondary" id= "secondary1"></div>
+  <div class="child" class="secondary"id = "secondary2"></div>
+  <div  class="child"class="secondary"id = "secondary3"></div>
+  <div  class="child"class="secondary"id = "secondary4"></div>
+  <div  class="child"class="secondary"id = "secondary5"></div>
+</div>
+  <h2>منشيء كود QR</h2>
   <input type="text" id="link" placeholder="Enter a link here..." size="40">
   <button onclick="generateQR()">Generate QR</button>
   <div id="qrcode"></div>
 
-  <script>
+  <scriptimport>
+    const upload_image_bg_remover = document.getElementById('upload-image-removed');
+    upload_image_bg_remover.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+    
+    async function removeBg(file) {
+    const { removeBackground } = window;
+    const blob = await removeBackground(imageElement);
+    const url = URL.createObjectURL(blob);
+    document.getElementById('preview-rmoved-image').src = url;
+    document.getElementById('preview-rmoved-image').style.display = "block";
+    // Display or download 'url'...
+    }
+  });
+
+    const upload_image_colors = document.getElementById('upload-image-colors');
+    const previewImg = document.getElementById('preview');
+
+    upload_image_colors.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        previewImg.src = event.target.result;
+        previewImg.style.display = "block"; // show preview
+      };
+      reader.readAsDataURL(file);
+    });
+      const img = document.getElementById('preview');
+      const colorThief = new ColorThief();
+
+  img.onload = () => {
+    const dominantColor = colorThief.getColor(img); 
+    document.getElementById("primary").style.backgroundColor = `rgb(${dominantColor[0]},${dominantColor[1]},${dominantColor[2]})`
+    document.getElementById("primary").style.display = "inline-block" 
+    const palette = colorThief.getPalette(img, 5); // array of [r, g, b]
+    for (let i = 0; i < 5; i++) {
+      document.getElementById(`secondary${i+1}`).style.backgroundColor = `rgb(${palette[i][0]},${palette[i][1]},${palette[i][2]})`
+      document.getElementById(`secondary${i+1}`).style.display = "inline-block"
+    }
+
+  };
     function generateQR() {
       const link = document.getElementById("link").value.trim();
       const qrContainer = document.getElementById("qrcode");
@@ -53,13 +132,15 @@
       if (link) {
         new QRCode(qrContainer, {
           text: link,
-          width: 200,
-          height: 200
+          width:200,
+          height: 200,
+          colorDark : "#593ec1",
+          colorLight : "#ffffff",
         });
       } else {
         qrContainer.innerHTML = "<p style='color:red'>❌ Please enter a link</p>";
       }
     }
-  </script>
+  </scrimport>
 </body>
 </html>
